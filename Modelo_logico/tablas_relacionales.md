@@ -1,124 +1,191 @@
-# Modelo Relacional del Videoclub
+# Modelo Lógico de Tablas Relacionales
 
-## ARCHIVADOR
-
-PK: num_serie
-
-Atributos:
-
-* num_serie
-* ubicacion
-* num_estanterias
-* fecha_compra
+Este documento contiene la definición lógica de las tablas obtenidas a partir de la transformación del Modelo Entidad-Relación (DER) para la gestión del videoclub.
 
 ---
 
-## PELICULA
+# Diagrama del Modelo Relacional (Mermaid)
 
-PK:
+El siguiente diagrama muestra las relaciones entre las tablas finales del sistema:
 
-* titulo
-* director
-* anio
+```mermaid
+erDiagram
 
-FK:
+    ARCHIVADOR ||--o{ PELICULA : almacena
 
-* num_serie_archivador → ARCHIVADOR(num_serie)
+    PELICULA ||--o{ REPARTO_PELICULA : posee
 
-Atributos:
+    ACTOR ||--o{ REPARTO_PELICULA : participa
 
-* genero
+    SOCIO ||--o{ ALQUILER : realiza
 
----
+    PELICULA ||--o{ ALQUILER : alquilada
 
-## SOCIO
+    SOCIO ||--o{ SOCIO_DIRECTOR_FAVORITO : tiene
 
-PK:
-
-* id_socio
-
-Atributos:
-
-* nombre
-* direccion
-* telefono
+    DIRECTOR_FAVORITO ||--o{ SOCIO_DIRECTOR_FAVORITO : favorito
+```
 
 ---
 
-## DIRECTOR_FAVORITO
+# Detalle de las Tablas
 
-PK:
+## 1. Tabla: Socio
 
-* id_director_favorito
+Registra la información personal de los socios del videoclub.
 
-Atributos:
-
-* nombre_director
-
----
-
-## SOCIO_DIRECTOR_FAVORITO
-
-PK:
-
-* id_socio
-* id_director_favorito
-
-FK:
-
-* id_socio → SOCIO(id_socio)
-* id_director_favorito → DIRECTOR_FAVORITO(id_director_favorito)
+| Atributo      | Tipo de Datos | Restricciones | Descripción                   |
+| ------------- | ------------- | ------------- | ----------------------------- |
+| id_socio (PK) | INT           | PRIMARY KEY   | Identificador único del socio |
+| nombre        | VARCHAR(100)  | NOT NULL      | Nombre completo del socio     |
+| direccion     | VARCHAR(150)  | NOT NULL      | Dirección de residencia       |
+| telefono      | VARCHAR(20)   | NOT NULL      | Teléfono de contacto          |
 
 ---
 
-## ACTOR
+## 2. Tabla: Director_Favorito
 
-PK:
+Registra los directores que pueden ser seleccionados como favoritos por los socios.
 
-* id_actor
-
-Atributos:
-
-* nombre_actor
+| Atributo                  | Tipo de Datos | Restricciones | Descripción                      |
+| ------------------------- | ------------- | ------------- | -------------------------------- |
+| id_director_favorito (PK) | INT           | PRIMARY KEY   | Identificador único del director |
+| nombre_director           | VARCHAR(100)  | NOT NULL      | Nombre del director              |
 
 ---
 
-## REPARTO_PELICULA
+## 3. Tabla: Socio_Director_Favorito
 
-PK:
+Resuelve la relación muchos a muchos entre Socio y Director_Favorito.
 
-* titulo_pelicula
-* director_pelicula
-* anio_pelicula
-* id_actor
+| Atributo                      | Tipo de Datos | Restricciones | Descripción                         |
+| ----------------------------- | ------------- | ------------- | ----------------------------------- |
+| id_socio (PK, FK)             | INT           | NOT NULL      | Identificador del socio             |
+| id_director_favorito (PK, FK) | INT           | NOT NULL      | Identificador del director favorito |
 
-FK:
+### Clave Primaria Compuesta
+
+(id_socio, id_director_favorito)
+
+### Claves Foráneas
+
+* id_socio → Socio(id_socio)
+* id_director_favorito → Director_Favorito(id_director_favorito)
+
+---
+
+## 4. Tabla: Archivador
+
+Registra los archivadores físicos donde se almacenan las películas.
+
+| Atributo        | Tipo de Datos | Restricciones | Descripción                    |
+| --------------- | ------------- | ------------- | ------------------------------ |
+| num_serie (PK)  | VARCHAR(50)   | PRIMARY KEY   | Número de serie del archivador |
+| ubicacion       | VARCHAR(100)  | NOT NULL      | Ubicación física               |
+| num_estanterias | INT           | NOT NULL      | Cantidad de estanterías        |
+| fecha_compra    | DATE          | NOT NULL      | Fecha de compra                |
+
+---
+
+## 5. Tabla: Pelicula
+
+Registra las películas disponibles en el videoclub.
+
+| Atributo                  | Tipo de Datos | Restricciones | Descripción                  |
+| ------------------------- | ------------- | ------------- | ---------------------------- |
+| titulo (PK)               | VARCHAR(150)  | NOT NULL      | Título de la película        |
+| director (PK)             | VARCHAR(100)  | NOT NULL      | Director de la película      |
+| anio (PK)                 | INT           | NOT NULL      | Año de estreno               |
+| genero                    | VARCHAR(50)   | NOT NULL      | Género cinematográfico       |
+| num_serie_archivador (FK) | VARCHAR(50)   | NOT NULL      | Archivador donde se almacena |
+
+### Clave Primaria Compuesta
+
+(titulo, director, anio)
+
+### Clave Foránea
+
+num_serie_archivador → Archivador(num_serie)
+
+---
+
+## 6. Tabla: Actor
+
+Registra los actores del sistema.
+
+| Atributo      | Tipo de Datos | Restricciones | Descripción             |
+| ------------- | ------------- | ------------- | ----------------------- |
+| id_actor (PK) | INT           | PRIMARY KEY   | Identificador del actor |
+| nombre_actor  | VARCHAR(100)  | NOT NULL      | Nombre del actor        |
+
+---
+
+## 7. Tabla: Reparto_Pelicula
+
+Resuelve la relación muchos a muchos entre Pelicula y Actor.
+
+| Atributo                   | Tipo de Datos | Restricciones | Descripción             |
+| -------------------------- | ------------- | ------------- | ----------------------- |
+| titulo_pelicula (PK, FK)   | VARCHAR(150)  | NOT NULL      | Título de la película   |
+| director_pelicula (PK, FK) | VARCHAR(100)  | NOT NULL      | Director de la película |
+| anio_pelicula (PK, FK)     | INT           | NOT NULL      | Año de la película      |
+| id_actor (PK, FK)          | INT           | NOT NULL      | Actor participante      |
+
+### Clave Primaria Compuesta
+
+(titulo_pelicula, director_pelicula, anio_pelicula, id_actor)
+
+### Claves Foráneas
 
 * (titulo_pelicula, director_pelicula, anio_pelicula)
-  → PELICULA(titulo, director, anio)
+  → Pelicula(titulo, director, anio)
 
 * id_actor
-  → ACTOR(id_actor)
+  → Actor(id_actor)
 
 ---
 
-## ALQUILER
+## 8. Tabla: Alquiler
 
-PK:
+Registra el historial de alquileres realizados por los socios.
 
-* id_socio
-* titulo_pelicula
-* director_pelicula
-* anio_pelicula
-* fecha_alquiler
+| Atributo                   | Tipo de Datos | Restricciones | Descripción                   |
+| -------------------------- | ------------- | ------------- | ----------------------------- |
+| id_socio (PK, FK)          | INT           | NOT NULL      | Socio que realiza el alquiler |
+| titulo_pelicula (PK, FK)   | VARCHAR(150)  | NOT NULL      | Película alquilada            |
+| director_pelicula (PK, FK) | VARCHAR(100)  | NOT NULL      | Director de la película       |
+| anio_pelicula (PK, FK)     | INT           | NOT NULL      | Año de la película            |
+| fecha_alquiler (PK)        | DATETIME      | NOT NULL      | Fecha del alquiler            |
+| fecha_devolucion           | DATETIME      | NULL          | Fecha de devolución           |
 
-FK:
+### Clave Primaria Compuesta
 
-* id_socio → SOCIO(id_socio)
+(id_socio, titulo_pelicula, director_pelicula, anio_pelicula, fecha_alquiler)
+
+### Claves Foráneas
+
+* id_socio → Socio(id_socio)
 
 * (titulo_pelicula, director_pelicula, anio_pelicula)
-  → PELICULA(titulo, director, anio)
+  → Pelicula(titulo, director, anio)
 
-Atributos:
+### Justificación
 
-* fecha_devolucion
+La inclusión de fecha_alquiler dentro de la clave primaria permite que un mismo socio pueda alquilar la misma película en diferentes momentos sin generar conflictos de identificación.
+
+---
+
+# Restricciones de Dominio Recomendadas
+
+```sql
+CHECK (anio >= 1888);
+
+CHECK (num_estanterias > 0);
+
+CHECK (
+    fecha_devolucion IS NULL
+    OR fecha_devolucion >= fecha_alquiler
+);
+```
+
+Estas restricciones ayudan a mantener la calidad y consistencia de los datos almacenados.
