@@ -1,153 +1,236 @@
-# Sistema de Gestión de Videoclub
+# Diseño de Base de Datos: Gestión de Videoclub
 
-## Descripción General
+Este repositorio contiene el diseño conceptual, lógico y físico de una base de datos para la gestión de un videoclub. El sistema permite administrar el catálogo de películas, los socios registrados, los archivadores donde se almacenan las películas, los actores participantes en cada producción cinematográfica, los directores favoritos de los socios y el historial de alquileres realizados.
 
-El presente proyecto consiste en el diseño de una base de datos para la gestión de un videoclub. El sistema permite administrar la información de los socios, las películas disponibles, los actores que participan en cada película, los directores favoritos de los socios, los archivadores donde se almacenan físicamente las películas y el historial de alquileres realizados.
+---
 
-El objetivo principal es garantizar una adecuada organización de la información y mantener la integridad de los datos mediante la implementación de claves primarias y foráneas.
+# Estructura del Repositorio
+
+```text
+videoclub/
+│
+├── README.md
+│
+├── diagramas/
+│   └── DER_Videoclub.png
+│
+└── modelo_logico/
+    ├── esquema.sql
+    └── tablas_relacionales.md
+```
 
 ---
 
 # 1. Interpretación del Problema
 
-El videoclub necesita almacenar y gestionar información relacionada con:
+El sistema de base de datos fue diseñado para satisfacer las necesidades operativas de un videoclub mediante la gestión integral de películas, socios y alquileres.
 
-* Los socios registrados.
-* Las películas disponibles para alquiler.
-* Los directores favoritos de cada socio.
-* Los actores que forman parte del reparto de las películas.
-* Los archivadores donde se almacenan las películas.
-* El historial de alquileres realizados por los socios.
+Los principales objetivos del sistema son:
 
-La base de datos debe permitir consultar fácilmente esta información y garantizar que las relaciones entre las entidades sean consistentes.
+### Gestión del Catálogo
+
+Permitir el almacenamiento de películas evitando duplicidades mediante una identificación única basada en el título, director y año de estreno.
+
+### Gestión del Inventario Físico
+
+Controlar la ubicación física de las películas mediante archivadores identificados de forma única.
+
+### Gestión de Socios
+
+Registrar la información personal de los socios y sus preferencias cinematográficas.
+
+### Gestión de Alquileres
+
+Mantener un historial de los préstamos realizados por los socios y las devoluciones correspondientes.
 
 ---
 
 # 2. Identificación de Entidades y Atributos
 
-## Entidad: Socio
+## A. Entidad: Socio
 
-### Atributos
-
-* id_socio (PK)
-* nombre
-* direccion
-* telefono
-
----
-
-## Entidad: Pelicula
-
-### Atributos
-
-* titulo (PK)
-* director (PK)
-* anio (PK)
-* genero
-* num_serie_archivador (FK)
+| Atributo  | Tipo           |
+| --------- | -------------- |
+| id_socio  | Clave Primaria |
+| nombre    | Simple         |
+| direccion | Simple         |
+| telefono  | Simple         |
 
 ---
 
-## Entidad: Archivador
+## B. Entidad: Pelicula
 
-### Atributos
-
-* num_serie (PK)
-* ubicacion
-* num_estanterias
-* fecha_compra
-
----
-
-## Entidad: Actor
-
-### Atributos
-
-* id_actor (PK)
-* nombre_actor
+| Atributo | Tipo         |
+| -------- | ------------ |
+| titulo   | PK Compuesta |
+| director | PK Compuesta |
+| anio     | PK Compuesta |
+| genero   | Simple       |
+| actores  | Multivaluado |
 
 ---
 
-## Entidad: Director_Favorito
+## C. Entidad: Archivador
 
-### Atributos
-
-* id_director_favorito (PK)
-* nombre_director
-
----
-
-# 3. Relaciones y Cardinalidades
-
-## Archivador – Pelicula
-
-### Cardinalidad
-
-1 : N
-
-### Justificación
-
-Un archivador puede almacenar muchas películas, pero cada película pertenece únicamente a un archivador.
+| Atributo        | Tipo           |
+| --------------- | -------------- |
+| num_serie       | Clave Primaria |
+| ubicacion       | Simple         |
+| num_estanterias | Simple         |
+| fecha_compra    | Simple         |
 
 ---
 
-## Pelicula – Actor
+## D. Entidad: Actor
 
-### Cardinalidad
-
-N : M
-
-### Justificación
-
-Una película puede tener varios actores y un actor puede participar en varias películas.
-
-Esta relación se resuelve mediante la tabla intermedia Reparto_Pelicula.
+| Atributo     | Tipo           |
+| ------------ | -------------- |
+| id_actor     | Clave Primaria |
+| nombre_actor | Simple         |
 
 ---
 
-## Socio – Director Favorito
+## E. Entidad: Director_Favorito
 
-### Cardinalidad
-
-N : M
-
-### Justificación
-
-Un socio puede tener varios directores favoritos y un director puede ser favorito de varios socios.
-
-Esta relación se resuelve mediante la tabla intermedia Socio_Director_Favorito.
+| Atributo             | Tipo           |
+| -------------------- | -------------- |
+| id_director_favorito | Clave Primaria |
+| nombre_director      | Simple         |
 
 ---
 
-## Socio – Pelicula
+# 3. Justificación de Relaciones y Cardinalidades
 
-### Cardinalidad
+```mermaid
+erDiagram
 
-N : M
+    ARCHIVADOR ||--o{ PELICULA : almacena
 
-### Justificación
+    SOCIO ||--o{ ALQUILER : realiza
 
-Un socio puede alquilar muchas películas y una misma película puede ser alquilada por distintos socios a lo largo del tiempo.
+    PELICULA ||--o{ ALQUILER : "es alquilada"
 
-Esta relación se resuelve mediante la tabla Alquiler.
+    SOCIO ||--o{ SOCIO_DIRECTOR_FAVORITO : tiene
+
+    DIRECTOR_FAVORITO ||--o{ SOCIO_DIRECTOR_FAVORITO : favorito
+
+    PELICULA ||--o{ REPARTO_PELICULA : posee
+
+    ACTOR ||--o{ REPARTO_PELICULA : participa
+```
+
+## Archivador - Pelicula
+
+### Cardinalidad: 1:N
+
+Un archivador puede contener múltiples películas, mientras que cada película pertenece a un único archivador.
+
+---
+
+## Pelicula - Actor
+
+### Cardinalidad: N:M
+
+Una película puede tener varios actores y un actor puede participar en múltiples películas.
+
+Esta relación se implementa mediante la tabla intermedia Reparto_Pelicula.
+
+---
+
+## Socio - Director Favorito
+
+### Cardinalidad: N:M
+
+Un socio puede tener varios directores favoritos y un mismo director puede ser favorito de varios socios.
+
+Esta relación se implementa mediante la tabla intermedia Socio_Director_Favorito.
+
+---
+
+## Socio - Pelicula
+
+### Cardinalidad: N:M
+
+Un socio puede alquilar muchas películas y una película puede ser alquilada por distintos socios a lo largo del tiempo.
+
+Esta relación se implementa mediante la tabla Alquiler.
 
 ---
 
 # 4. Transformación al Modelo Relacional
 
-Las relaciones de muchos a muchos fueron transformadas en tablas intermedias:
+## Entidades Principales
 
-* Reparto_Pelicula
-* Socio_Director_Favorito
-* Alquiler
+Las siguientes entidades se transformaron directamente en tablas:
 
-Los atributos multivaluados fueron normalizados para cumplir con la Primera Forma Normal (1FN).
+* Socio
+* Pelicula
+* Archivador
+* Actor
+* Director_Favorito
+
+---
+
+## Resolución de Atributos Multivaluados
+
+### Actores de una Película
+
+Debido a que una película puede tener varios actores, se creó la tabla:
+
+Reparto_Pelicula
+
+Compuesta por:
+
+* titulo_pelicula
+* director_pelicula
+* anio_pelicula
+* id_actor
+
+---
+
+### Directores Favoritos de un Socio
+
+Debido a que un socio puede tener varios directores favoritos, se creó la tabla:
+
+Socio_Director_Favorito
+
+Compuesta por:
+
+* id_socio
+* id_director_favorito
+
+---
+
+## Resolución de la Relación 1:N
+
+La relación entre Archivador y Pelicula se resolvió incorporando:
+
+num_serie_archivador
+
+como clave foránea en la tabla Pelicula.
+
+---
+
+## Resolución de la Relación N:M
+
+La relación de alquiler se resolvió mediante la tabla:
+
+Alquiler
+
+compuesta por:
+
+* id_socio
+* titulo_pelicula
+* director_pelicula
+* anio_pelicula
+* fecha_alquiler
+* fecha_devolucion
 
 ---
 
 # 5. Decisiones de Diseño
 
-## Uso de Clave Primaria Compuesta en Pelicula
+## Uso de Clave Primaria Compuesta
 
 La entidad Pelicula utiliza una clave primaria compuesta por:
 
@@ -155,33 +238,70 @@ La entidad Pelicula utiliza una clave primaria compuesta por:
 * director
 * anio
 
-Esta decisión se tomó porque pueden existir películas con el mismo título. La combinación de estos tres atributos permite identificar de forma única cada película.
+Esta decisión se tomó porque pueden existir películas con el mismo título.
+
+La combinación de estos tres atributos garantiza una identificación única.
 
 ---
 
 ## Uso de Tablas Intermedias
 
-Se crearon tablas asociativas para representar relaciones N:M:
+Para resolver relaciones N:M se implementaron las siguientes tablas:
 
 * Reparto_Pelicula
 * Socio_Director_Favorito
 * Alquiler
 
+Esto permite mantener la normalización y evitar redundancia de información.
+
 ---
 
 ## Integridad Referencial
 
-Se implementaron claves foráneas para garantizar la consistencia entre las entidades relacionadas.
+Se implementaron claves foráneas para garantizar la consistencia de los datos.
 
-Esto evita:
+Estas restricciones impiden:
 
-* Películas asociadas a archivadores inexistentes.
-* Alquileres de películas no registradas.
-* Relaciones con actores inexistentes.
-* Relaciones con directores inexistentes.
+* Asociar películas a archivadores inexistentes.
+* Registrar alquileres de películas inexistentes.
+* Relacionar actores con películas inexistentes.
+* Relacionar socios con directores inexistentes.
+
+---
+
+## Restricciones de Dominio Recomendadas
+
+```sql
+CHECK (anio >= 1888)
+
+CHECK (num_estanterias > 0)
+
+CHECK (
+    fecha_devolucion IS NULL
+    OR fecha_devolucion >= fecha_alquiler
+)
+```
+
+---
+
+# Modelo Entidad Relación
+
+La imagen del DER se encuentra en la carpeta:
+
+```text
+diagramas/DER_Videoclub.png
+```
+
+Para visualizarla dentro del repositorio:
+
+```markdown
+![DER Videoclub](diagramas/DER_Videoclub.png)
+```
 
 ---
 
 # Resultado Final
 
-La base de datos diseñada cumple con los requerimientos planteados para la gestión de un videoclub y mantiene una estructura normalizada que facilita el almacenamiento y consulta eficiente de la información.
+El modelo diseñado cumple con todos los requerimientos planteados para la gestión de un videoclub.
+
+La solución implementada mantiene la integridad referencial, evita redundancias y proporciona una estructura escalable para la administración eficiente de socios, películas, actores, directores favoritos, archivadores y alquileres.
