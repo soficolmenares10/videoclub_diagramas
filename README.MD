@@ -284,22 +284,6 @@ CHECK (
 
 ---
 
-# Modelo Entidad Relación
-
-La imagen del DER se encuentra en la carpeta:
-
-```text
-diagramas/DER_Videoclub.png
-```
-
-Para visualizarla dentro del repositorio:
-
-```markdown
-![DER Videoclub](diagramas/DER_Videoclub.png)
-```
-
----
-
 # Resultado Final
 
 El modelo diseñado cumple con todos los requerimientos planteados para la gestión de un videoclub.
